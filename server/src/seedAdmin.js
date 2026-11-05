@@ -1,0 +1,4 @@
+import 'dotenv/config'; import mongoose from 'mongoose'; import bcrypt from 'bcryptjs';
+const s=new mongoose.Schema({name:String,email:{type:String,unique:true},passwordHash:String,role:String},{timestamps:true});
+const User=mongoose.model('Record',s,'records');
+const run=async()=>{const {SEED_ADMIN_EMAIL,SEED_ADMIN_PASSWORD}=process.env;if(!SEED_ADMIN_EMAIL||!SEED_ADMIN_PASSWORD||SEED_ADMIN_PASSWORD.length<12)throw Error('Set SEED_ADMIN_EMAIL and a 12+ character SEED_ADMIN_PASSWORD');await mongoose.connect(process.env.MONGODB_URI);const exists=await User.findOne({email:SEED_ADMIN_EMAIL.toLowerCase()});if(exists)throw Error('That email already exists');await User.create({name:'Platform Administrator',email:SEED_ADMIN_EMAIL.toLowerCase(),passwordHash:await bcrypt.hash(SEED_ADMIN_PASSWORD,12),role:'admin'});console.log('Admin created');await mongoose.disconnect()};run().catch(e=>{console.error(e.message);process.exit(1)});
